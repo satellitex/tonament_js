@@ -32,6 +32,15 @@ function strT2Y(str){
     return ret;
 }
 
+function strY2T(str){
+    var ret = "";
+    for( var i = 0; i < str.length; i++){
+        ret += str[i];
+        ret += "\n";
+    }
+    return ret;
+}
+
 function shuffle(array) {
   var n = array.length, t, i;
 
@@ -205,12 +214,7 @@ function MemberPlate(x,y,id,nums,str){
     this.mvf = 0;
     this.count = 0;
 
-
-    this.str = "";
-    for( var i = 0; i < str.length; i++) {
-        this.str += str[i];
-        this.str += '\n';
-    }
+    this.str = strY2T(str);
 
     this.set = function( x, y ){
         if( this.mvf == 1 ) return;
