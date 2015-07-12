@@ -261,6 +261,7 @@ function MemberPlate(x,y,id,nums,str){
         rect( this.x, this.y, this.w, this.h);
         textSize(this.size);
         fill(0,0,0,255);
+        textFont("Georgia");
         text( this.str, this.x+(this.w-this.size)/2, this.y, this.w , this.h);
     }
 
