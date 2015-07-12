@@ -113,8 +113,38 @@ function TonamentTable(member){
         var x = this.calcX(this.pos[id]);
         var y = this.calcY(this.pos[id]);
         this.members[i].set(x,y);
+        this.members[i].posset(id);
         this.members[i].rankup();
         this.members[i].rankup();        
+    }
+
+
+    this.dfs = function(node,id){
+        if( node == id ) return true;
+        if( node >= this.n * 2 ) return false;
+        if( this.dfs( 2*node+1, id ) ) return true;
+        if( this.dfs( 2*node+2, id ) ) return true;
+        return false;
+    }
+    
+    //members[i] の結果を戻す
+    this.rev = function(i){
+        var id = this.members[i].pos;
+        var l = this.dfs( 2 * id + 1, this.members[i].id );
+        var r = this.dfs( 2 * id + 2, this.members[i].id );
+        if( l ) {
+            this.pos[id].f = false;
+            id = 2 * id + 1;
+        } else if( r ) {
+            this.pos[id].f = false;
+            id = 2 * id + 2;
+        } else return;
+        var x = this.calcX( this.pos[id] );
+        var y = this.calcY( this.pos[id] );
+        this.members[i].set(x,y);
+        this.members[i].posset(id);
+        this.members[i].rankdown();
+        this.members[i].rankdown();
     }
     
     //相手がシードなら勝たせる
@@ -134,7 +164,7 @@ function TonamentTable(member){
         var x = (l+r)/2;
         var lx = (l + x) / 2;
         var rx = (r + x) / 2;
-//        console.log( l + " " + r + " / 2 = " + x );
+        //        console.log( l + " " + r + " / 2 = " + x );
         line(x,y-this.haba,x,y);
         if( h >= this.high ) return;
         line(lx,y,rx,y);
@@ -166,12 +196,21 @@ function TonamentTable(member){
                 this.members[winner].rankup();
                 this.members[winner].rankup();
                 this.members[winner].rankup();
+                this.members[winner].posset(-1);
             }
             this.members[winner].set(x,y);
         }
         for( var i = 0; i < this.n ; i++){
             this.members[i].calc();
         }
+        this.members.sort(
+            function(a,b){
+                if( a.pos < b.pos ) return 1;
+                if( a.pos > b.pos ) return -1;
+                return 0;
+            }
+        );
+
     }
 
     this.touchMember = function(mx,my){
@@ -180,7 +219,7 @@ function TonamentTable(member){
             if( this.members[i].checkP(mx,my) ){
                 var ret = window.confirm( strT2Y(this.members[i].str) + " が勝ちましたか？" );
                 if( ret ){
-                    console.log(strT2Y(this.members[i].str) + " win!" );
+                    //console.log(strT2Y(this.members[i].str) + " win!" );
                     var id = this.members[i].pos;
                     id = floor((id-1)/2);
                     if( this.pos[id].f ){
@@ -194,6 +233,17 @@ function TonamentTable(member){
         }
     }
     
+    this.reverseMember = function(mx,my) {
+        for( var i = 0; i < this.n; i++ ){
+            if( this.members[i].checkP(mx,my) ){
+                var ret = window.confirm( strT2Y(this.members[i].str) + " の結果を戻しますか？" );
+                if( ret ){
+                    this.rev(i);                    
+                }
+            }
+        }        
+    }
+    
 }
 
 function MemberPlate(x,y,id,nums,str){
@@ -204,7 +254,7 @@ function MemberPlate(x,y,id,nums,str){
     this.x = x;
     this.y = y;
     this.allnums = nums;
-    this.id = id;
+    this.id = id + nums - 1;
     this.pos = id + nums - 1;
 
     this.sx = x;
@@ -229,10 +279,21 @@ function MemberPlate(x,y,id,nums,str){
         this.size++;
         this.h = ( this.w + 7 )  * this.str.length;
     }
+    this.rankdown = function(){
+        this.x++;
+        this.w--;
+        this.size--;
+        this.h = ( this.w + 7 )  * this.str.length;
+    }
+
+    this.posset = function( pos ){
+        this.pos = pos;
+    }
+
 
     this.calc = function() {
         if( this.mvf == 1 ){
-            console.log("move " + this.ex + " , " + this.ey + " - " + this.x + " , " + this.y  );
+            //console.log("move " + this.ex + " , " + this.ey + " - " + this.x + " , " + this.y  );
             if( MOVEC/2 > this.count ){ 
                 var h = (this.ey - this.sy);                
                 // math.PI/2 : c = MOVEC/2 this.count
@@ -249,8 +310,6 @@ function MemberPlate(x,y,id,nums,str){
                 this.sy = this.ey;
                 this.x = this.ex;
                 this.y = this.ey;
-                if( this.pos == 0 ) this.pos = -1;
-                this.pos = floor((this.pos-1)/2);
             }
             this.count++;
         }
@@ -309,6 +368,9 @@ function draw() {
 
 function mousePressed(){
     if( len > 0 ){
-        tonament.touchMember(mouseX,mouseY);
+        if( mouseButton == LEFT )
+            tonament.touchMember(mouseX,mouseY);
+        else if( mouseButton == RIGHT )
+            tonament.reverseMember(mouseX,mouseY);
     }
 }
