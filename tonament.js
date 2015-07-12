@@ -1,10 +1,11 @@
 const WIDTH = 1200;
-const HEIGHT = 800;
+const HEIGHT = 900;
 const L = 30;
 const R = WIDTH - L;
-const H = HEIGHT - 200;
+const H = HEIGHT - 300;
 const SH = 40;
 const MOVEC = 20;
+
 function readMember(){
     var value = document.getElementById('member').value.split(/\n/);
     console.log("readMember");
@@ -77,7 +78,6 @@ function TonamentTable(member){
         return postion.getY()+this.haba;
     }
 
-
     shuffle( member );
     
     for( var i = 0,cnt = 0,kn = 0; cnt<this.n; cnt++){
@@ -104,8 +104,9 @@ function TonamentTable(member){
         var x = this.calcX(this.pos[id]);
         var y = this.calcY(this.pos[id]);
         this.members[i].set(x,y);
+        this.members[i].rankup();
+        this.members[i].rankup();        
     }
-
     
     //相手がシードなら勝たせる
     if( this.n > 1 ){
@@ -152,6 +153,11 @@ function TonamentTable(member){
             var x = this.calcX(pos);
             var y = pos.getY();
             //console.log( "winner " + winner + " x = "+ x + " y = " + y  );
+            if( this.members[winner].mvf == 0 ){
+                this.members[winner].rankup();
+                this.members[winner].rankup();
+                this.members[winner].rankup();
+            }
             this.members[winner].set(x,y);
         }
         for( var i = 0; i < this.n ; i++){
@@ -172,20 +178,19 @@ function TonamentTable(member){
                         alert("すでに負けています。");
                     } else {
                         this.pos[id].f = true;
-                        var x = this.calcX(this.pos[id]);
-                        var y = this.calcY(this.pos[id]);
-                        this.members[i].set(x,y);
+                        this.win(i);
                     }
                 }
             }
         }
     }
+    
 }
 
 function MemberPlate(x,y,id,nums,str){
-    this.w = 20;
-    this.h = 100;
     this.size = 16;
+    this.w = 20;
+    this.h = str.length*this.w;
     
     this.x = x;
     this.y = y;
@@ -200,6 +205,7 @@ function MemberPlate(x,y,id,nums,str){
     this.mvf = 0;
     this.count = 0;
 
+
     this.str = "";
     for( var i = 0; i < str.length; i++) {
         this.str += str[i];
@@ -211,6 +217,13 @@ function MemberPlate(x,y,id,nums,str){
         this.ex = x; this.ey = y;
         this.count = 0;
         this.mvf = 1;
+    }
+
+    this.rankup = function(){
+        this.x--;
+        this.w++;
+        this.size++;
+        this.h = ( this.w + 7 )  * this.str.length;
     }
 
     this.calc = function() {
@@ -232,7 +245,7 @@ function MemberPlate(x,y,id,nums,str){
                 this.sy = this.ey;
                 this.x = this.ex;
                 this.y = this.ey;
-                if( this.pos == 0 ) this.pos = 0;
+                if( this.pos == 0 ) this.pos = -1;
                 this.pos = floor((this.pos-1)/2);
             }
             this.count++;
@@ -252,8 +265,7 @@ function MemberPlate(x,y,id,nums,str){
         if( this.x < mx && mx < this.x + this.w &&
             this.y < my && my < this.y + this.h ) return true;
         return false;
-    }
-    
+    }    
 }
 
 
